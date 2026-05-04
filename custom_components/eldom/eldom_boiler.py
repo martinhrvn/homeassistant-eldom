@@ -762,6 +762,65 @@ class FlatIoTEldomBoiler(IoTEldomBoiler):
         # This calculates the average between the two chambers' temperatures
         return (float(self._flat_boiler_details.Tin) + float(self._flat_boiler_details.Tout)) / 2
 
+    @property
+    def chamber1_temperature(self) -> float:
+        """Retrieve the first chamber temperature (Tout)."""
+        return float(self._flat_boiler_details.Tout)
+
+    @property
+    def chamber2_temperature(self) -> float:
+        """Retrieve the second chamber temperature (Tin)."""
+        return float(self._flat_boiler_details.Tin)
+
+    @property
+    def heater_enabled(self) -> bool:
+        """Retrieve whether the boiler's heater is currently active."""
+        return str(self._flat_boiler_details.Heater) != "0"
+
+    @property
+    def target_temperature(self) -> float:
+        """Retrieve the target temperature based on current mode."""
+        mode = int(self._flat_boiler_details.BoilerMode)
+        if mode == 2:  # Powerful
+            return float(self._flat_boiler_details.Powerfull_Tset)
+        if mode in (4, 6):  # Smart / Eco
+            return float(self._flat_boiler_details.EcoTout)
+        return 0.0
+
+    @property
+    def eco_target_temp_chamber1(self) -> float:
+        """Retrieve the Eco mode target temp for chamber 1 (Tout)."""
+        return float(self._flat_boiler_details.EcoTout)
+
+    @property
+    def eco_target_temp_chamber2(self) -> float:
+        """Retrieve the Eco mode target temp for chamber 2 (Tin)."""
+        return float(self._flat_boiler_details.EcoTin)
+
+    @property
+    def powerful_target_temp(self) -> float:
+        """Retrieve the Powerful mode target temperature."""
+        return float(self._flat_boiler_details.Powerfull_Tset)
+
+    @property
+    def extra_save_rate(self) -> int:
+        """Retrieve the ExtraSave tariff zone count (2, 3, or 4)."""
+        return (
+            int(self._flat_boiler_details.ExtraSaveRate)
+            if self._flat_boiler_details.ExtraSaveRate
+            else 0
+        )
+
+    @property
+    def ready_time(self) -> str:
+        """Retrieve the time when the boiler will be ready."""
+        return self._flat_boiler_details.ReadyTime
+
+    @property
+    def remain_time(self) -> str:
+        """Retrieve the remaining time for the current mode."""
+        return self._flat_boiler_details.RemainTime
+
     async def turn_on(self) -> None:
         """Turn the boiler on."""
         await self.set_operation_mode(STATE_ECO)
